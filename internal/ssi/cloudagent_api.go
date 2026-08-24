@@ -112,6 +112,7 @@ func (ca *CloudAgentAPI) UpdateDID(payload Payload, did DIDPrism) error {
 }
 
 // Retorna 202 mas não é efetivada na VDR no ambiente de teste locais
+// Verificar se desativa quando não publicado
 func (ca *CloudAgentAPI) DeactivateDID(did DIDPrism) error {
 	resp, err := http.Post(ca.formattedURL+"/did-registrar/dids/"+did+"/deactivations",
 		"application/json", nil)

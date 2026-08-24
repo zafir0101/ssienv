@@ -14,10 +14,12 @@ import (
 const caUrlString = "http://host.docker.internal:8080"
 const eaUrlString = "http://host.docker.internal:8081"
 
+var agentURL, _ = url.Parse(eaUrlString)
+
 var ca *ssi.CloudAgentAPI = createAgent(caUrlString)
-var ea *ssi.CloudAgentAPI = createAgent(eaUrlString)
-var co *domain.InstitutionController = domain.NewController(ca)
-var wallet *domain.InstitutionController = domain.NewController(ea)
+var ea *ssi.EdgeAgentAPI = ssi.NewEdgeAgentAPI(agentURL)
+var ins_co *domain.InstitutionController = domain.NewInstitutionController(ca)
+var ind_co *domain.IndividualController = domain.NewIndividualController(ea)
 
 func createAgent(urlString string) *ssi.CloudAgentAPI {
 	agentURL, _ := url.Parse(urlString)
@@ -26,7 +28,7 @@ func createAgent(urlString string) *ssi.CloudAgentAPI {
 
 func TestCrudDID(t *testing.T) {
 	// Teste de Create DID
-	err := co.CreateDID()
+	err := ins_co.CreateDID()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -70,14 +72,14 @@ func TestCrudDID(t *testing.T) {
 
 	// Teste de Connections
 	connLabel := "ConectarNoVinizao"
-	inv, err := co.CreateConnection(connLabel)
+	inv, err := ins_co.CreateConnection(connLabel)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
 	time.Sleep(15 * time.Second)
 
-	wallet.AcceptConnection(connLabel, inv)
+	ind_co.AcceptConnection(connLabel, inv)
 
 	// if err := co.DeactivateConnection(label); err != nil {
 	// fmt.Println(err.Error())
@@ -99,7 +101,7 @@ func TestCrudDID(t *testing.T) {
 			    }`)
 
 	label := "Credencial de Cortesã do vini"
-	if err := co.CreateSchema(label, schema); err != nil {
+	if err := ins_co.CreateSchema(label, schema); err != nil {
 		fmt.Println(err.Error())
 	}
 
@@ -114,7 +116,7 @@ func TestCrudDID(t *testing.T) {
 		    "familyName": "galhao"
 		  }`)
 	offerlabel := "Para provar a pureza do vini"
-	if err := co.CreateCredentialOffer(offerlabel, claims, connLabel, co.Schemas()[label]); err != nil {
+	if err := ins_co.CreateCredentialOffer(offerlabel, claims, connLabel, ins_co.Schemas()[label]); err != nil {
 		fmt.Println(err.Error())
 	}
 
@@ -122,17 +124,17 @@ func TestCrudDID(t *testing.T) {
 
 	// Teste para receber oferta de credencial
 	// O edge agent vai utilizar o longform (nao ira publicar o did)
-	wallet.CreateDID()
+	ind_co.CreateDID()
 
 	time.Sleep(30 * time.Second)
 
 	var recIDs []string
 	for i := 0; i < 10; i++ {
-		err := wallet.RefreshOffersReceived()
+		err := ind_co.RefreshOffersReceived()
 		if err != nil && err.Error() != "No credential offers" {
 			t.Fatalf("refresh offers failed: %v", err) // erro de verdade, para
 		}
-		recIDs = wallet.CrendetialOffersReceived()
+		recIDs = ind_co.CrendetialOffersReceived()
 		if len(recIDs) > 0 {
 			break
 		}
@@ -140,13 +142,13 @@ func TestCrudDID(t *testing.T) {
 	}
 
 	credlabel := "Credencial que vini é puro"
-	if err := wallet.AcceptCredentialOffer(credlabel, recIDs[0]); err != nil {
+	if err := ind_co.AcceptCredentialOffer(credlabel, recIDs[0]); err != nil {
 		fmt.Println(err.Error())
 	}
 
 	// Teste para apresentar prova de credencial
 	prooflabel := "Provar a pureza do vini"
-	err = co.CreateProofRequest(prooflabel, connLabel, co.Schemas()[label])
+	err = ins_co.CreateProofRequest(prooflabel, connLabel, ins_co.Schemas()[label])
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -154,21 +156,29 @@ func TestCrudDID(t *testing.T) {
 	// Teste para aceitar a apresentação de prova de credencial
 	var presIDs []string
 	for i := 0; i < 10; i++ {
-		if err := wallet.RefreshProofRequestsReceived(); err != nil {
+		if err := ind_co.RefreshProofRequestsReceived(); err != nil {
 			t.Fatalf("refresh proof requests failed: %v", err)
 		}
-		presIDs = wallet.ProofRequestsReceived()
+		presIDs = ind_co.ProofRequestsReceived()
 		if len(presIDs) > 0 {
 			break
 		}
 		time.Sleep(3 * time.Second)
 	}
 	if len(presIDs) == 0 {
-		t.Fatal("nenhuma proof request recebida após 30s")
+		t.Fatalf("nenhuma proof request recebida após 30s")
 	}
-
-	err = wallet.AcceptProofRequest(prooflabel, credlabel, presIDs[0])
+	err = ind_co.AcceptProofRequest(prooflabel, credlabel, presIDs[0])
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+
+	fmt.Println(ins_co.CredentialOffersSent())
+	fmt.Println(ins_co.CrendetialOffersReceived())
+	fmt.Println(ins_co.ProofRequestsSent())
+	fmt.Println(ins_co.Connections())
+
+	fmt.Println(ind_co.Credentials())
+	fmt.Println(ind_co.CrendetialOffersReceived())
+	fmt.Println(ind_co.Connections())
 }

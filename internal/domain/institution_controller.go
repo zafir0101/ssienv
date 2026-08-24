@@ -30,7 +30,7 @@ type InstitutionController struct {
 	num_keys int
 }
 
-func NewController(cloudAgentAPI *ssi.CloudAgentAPI) *InstitutionController {
+func NewInstitutionController(cloudAgentAPI *ssi.CloudAgentAPI) *InstitutionController {
 	return &InstitutionController{
 		cloudAgentAPI:         cloudAgentAPI,
 		publishedsDIDs:        make(map[string]ssi.DIDPrism),
