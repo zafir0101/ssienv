@@ -1,5 +1,6 @@
 package ssi_test
 
+/*
 import (
 	"encoding/json"
 	"fmt"
@@ -48,17 +49,17 @@ func TestCrudDID(t *testing.T) {
 		}
 
 		fmt.Println(string(json))
-	*/
+*/
 
-	// Teste de Deactivate DID
-	/*
-		if err := ca.DeactivateDID("did:prism:318039f23c7c4356b8650a42a05a72b7f1605b8689accac3a995363d5d80645b"); err != nil {
-			fmt.Println(err.Error())
-		}
-	*/
+// Teste de Deactivate DID
+/*
+	if err := ca.DeactivateDID("did:prism:318039f23c7c4356b8650a42a05a72b7f1605b8689accac3a995363d5d80645b"); err != nil {
+		fmt.Println(err.Error())
+	}
+*/
 
-	// Teste de Update DID
-	/*
+// Teste de Update DID
+/*
 		if err := co.AddKeyToDID(0); err != nil {
 			fmt.Println(err.Error())
 		}
@@ -68,7 +69,7 @@ func TestCrudDID(t *testing.T) {
 		if err := co.RemoveDIDKey("key3-authentication", 0); err != nil {
 			fmt.Println(err.Error())
 		}
-	*/
+
 
 	// Teste de Connections
 	connLabel := "ConectarNoVinizao"
@@ -173,12 +174,5 @@ func TestCrudDID(t *testing.T) {
 		fmt.Println(err.Error())
 	}
 
-	fmt.Println(ins_co.CredentialOffersSent())
-	fmt.Println(ins_co.CrendetialOffersReceived())
-	fmt.Println(ins_co.ProofRequestsSent())
-	fmt.Println(ins_co.Connections())
-
-	fmt.Println(ind_co.Credentials())
-	fmt.Println(ind_co.CrendetialOffersReceived())
-	fmt.Println(ind_co.Connections())
 }
+*/

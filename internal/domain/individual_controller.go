@@ -7,40 +7,40 @@ import (
 )
 
 type IndividualController struct {
-	edgeAgentAPI *ssi.EdgeAgentAPI
+	EdgeAgentAPI *ssi.EdgeAgentAPI
 
-	individualDIDPrism ssi.LongFormDIDPrism
+	IndividualDIDPrism ssi.LongFormDIDPrism
 
-	connections map[string]ssi.ConnectionID // Será serializado, apenas connections realizados na maquina
+	Connections map[string]ssi.ConnectionID // Será serializado, apenas connections realizados na maquina
 
-	credentials              map[string]ssi.RecordID
-	credentialOffersReceived []ssi.RecordID // Limitação: Não consegue compartilhar uma label para a oferta
+	Credentials              map[string]ssi.RecordID
+	CredentialOffersReceived []ssi.RecordID // Limitação: Não consegue compartilhar uma label para a oferta
 
-	proofRequestsAccepted map[string]ssi.PresentationID
-	proofRequestsReceived []ssi.RecordID // Limitação: Não consegue compartilhar uma label para a requisicao
+	ProofRequestsAccepted map[string]ssi.PresentationID
+	ProofRequestsReceived []ssi.RecordID // Limitação: Não consegue compartilhar uma label para a requisicao
 }
 
 func NewIndividualController(cloudAgentAPI *ssi.EdgeAgentAPI) *IndividualController {
 	return &IndividualController{
-		edgeAgentAPI:          cloudAgentAPI,
-		connections:           make(map[string]ssi.ConnectionID),
-		credentials:           make(map[string]ssi.RecordID),
-		proofRequestsAccepted: make(map[string]ssi.PresentationID),
+		EdgeAgentAPI:          cloudAgentAPI,
+		Connections:           make(map[string]ssi.ConnectionID),
+		Credentials:           make(map[string]ssi.RecordID),
+		ProofRequestsAccepted: make(map[string]ssi.PresentationID),
 	}
 }
 
 func (co *IndividualController) RefreshOffersReceived() error {
-	recordIDs, credentialStatus, err := co.edgeAgentAPI.ListCredentialOffers()
+	recordIDs, credentialStatus, err := co.EdgeAgentAPI.ListCredentialOffers()
 	if err != nil {
 		return err
 	}
 
-	clear(co.credentialOffersReceived)
-	co.credentialOffersReceived = co.credentialOffersReceived[:0]
+	clear(co.CredentialOffersReceived)
+	co.CredentialOffersReceived = co.CredentialOffersReceived[:0]
 
 	for i, credStatus := range credentialStatus {
 		if credStatus == "OfferReceived" {
-			co.credentialOffersReceived = append(co.credentialOffersReceived, recordIDs[i])
+			co.CredentialOffersReceived = append(co.CredentialOffersReceived, recordIDs[i])
 		}
 	}
 
@@ -48,17 +48,17 @@ func (co *IndividualController) RefreshOffersReceived() error {
 }
 
 func (co *IndividualController) RefreshProofRequestsReceived() error {
-	presentationIDs, proofReqStatus, err := co.edgeAgentAPI.ListProofRequestsData()
+	presentationIDs, proofReqStatus, err := co.EdgeAgentAPI.ListProofRequestsData()
 	if err != nil {
 		return err
 	}
 
-	clear(co.proofRequestsReceived)
-	co.proofRequestsReceived = co.proofRequestsReceived[:0]
+	clear(co.ProofRequestsReceived)
+	co.ProofRequestsReceived = co.ProofRequestsReceived[:0]
 
 	for i, proofReqStatus := range proofReqStatus {
 		if proofReqStatus == "RequestReceived" {
-			co.proofRequestsReceived = append(co.proofRequestsReceived, presentationIDs[i])
+			co.ProofRequestsReceived = append(co.ProofRequestsReceived, presentationIDs[i])
 			continue
 		}
 	}
@@ -75,22 +75,22 @@ func (co *IndividualController) CreateDID() error {
 		return err
 	}
 
-	did, err := co.edgeAgentAPI.CreateDID(payload)
+	did, err := co.EdgeAgentAPI.CreateDID(payload)
 	if err != nil {
 		return err
 	}
 
-	co.individualDIDPrism = did
+	co.IndividualDIDPrism = did
 
 	return nil
 }
 
 func (co *IndividualController) DeactivateDID() error {
-	if co.individualDIDPrism == "" {
+	if co.IndividualDIDPrism == "" {
 		return errors.New("First create a did")
 	}
 
-	if err := co.edgeAgentAPI.DeactivateDID(co.individualDIDPrism); err != nil {
+	if err := co.EdgeAgentAPI.DeactivateDID(co.IndividualDIDPrism); err != nil {
 		return err
 	}
 
@@ -100,98 +100,81 @@ func (co *IndividualController) DeactivateDID() error {
 func (co *IndividualController) CreateConnection(label string) (ssi.InvitationOOB, error) {
 	payload := newConnectionCreationPayload(label)
 
-	connID, invOOB, err := co.edgeAgentAPI.CreateConnection(payload)
+	connID, invOOB, err := co.EdgeAgentAPI.CreateConnection(payload)
 	if err != nil {
 		return "", err
 	}
 
-	co.connections[label] = connID
+	co.Connections[label] = connID
 	return invOOB, nil
 }
 
 func (co *IndividualController) AcceptConnection(label string, invOOB ssi.InvitationOOB) error {
 	payload := newConnectionAcceptPayload(invOOB)
 
-	connID, err := co.edgeAgentAPI.AcceptConnection(payload)
+	connID, err := co.EdgeAgentAPI.AcceptConnection(payload)
 	if err != nil {
 		return err
 	}
 
-	co.connections[label] = connID
+	co.Connections[label] = connID
 	return nil
 }
 
 func (co *IndividualController) DeactivateConnection(label string) error {
-	connID := co.connections[label]
+	connID := co.Connections[label]
 	if connID == "" {
 		return errors.New("No connections with label " + label)
 	}
 
-	if err := co.edgeAgentAPI.DeactivateConnection(connID); err != nil {
+	if err := co.EdgeAgentAPI.DeactivateConnection(connID); err != nil {
 		return err
 	}
 
-	delete(co.connections, label)
+	delete(co.Connections, label)
 
 	return nil
 }
 
 func (co *IndividualController) AcceptCredentialOffer(credentialLabel string, recID ssi.RecordID) error {
-	payload := newOfferAcceptancePayload(co.individualDIDPrism)
+	payload := newOfferAcceptancePayload(co.IndividualDIDPrism)
 
-	if err := co.edgeAgentAPI.AcceptCredentialOffer(payload, recID); err != nil {
+	if err := co.EdgeAgentAPI.AcceptCredentialOffer(payload, recID); err != nil {
 		return err
 	}
 
-	for i, offer := range co.credentialOffersReceived {
+	for i, offer := range co.CredentialOffersReceived {
 		if offer == recID {
-			co.credentialOffersReceived = append(co.credentialOffersReceived[:i], co.credentialOffersReceived[i+1:]...)
+			co.CredentialOffersReceived = append(co.CredentialOffersReceived[:i], co.CredentialOffersReceived[i+1:]...)
 			break
 		}
 	}
 
-	co.credentials[credentialLabel] = recID
+	co.Credentials[credentialLabel] = recID
 
 	return nil
 }
 
 func (co *IndividualController) AcceptProofRequest(proofReqLabel string, credentialLabel string, presID ssi.PresentationID) error {
-	recID := co.credentials[credentialLabel]
+	recID := co.Credentials[credentialLabel]
 	if recID == "" {
 		return errors.New("No credentials with label " + credentialLabel)
 	}
 
 	payload := newProofRequestAcceptancePayload(recID)
 
-	if err := co.edgeAgentAPI.AcceptProofRequest(payload, presID); err != nil {
+	if err := co.EdgeAgentAPI.AcceptProofRequest(payload, presID); err != nil {
 		return err
 	}
 
-	for i, request := range co.proofRequestsReceived {
+	for i, request := range co.ProofRequestsReceived {
 		if request == presID {
-			co.proofRequestsReceived = append(co.proofRequestsReceived[:i], co.proofRequestsReceived[i+1:]...)
+			co.ProofRequestsReceived = append(co.ProofRequestsReceived[:i], co.ProofRequestsReceived[i+1:]...)
 			break
 		}
 	}
 
-	co.proofRequestsAccepted[proofReqLabel] = presID
+	co.ProofRequestsAccepted[proofReqLabel] = presID
 
 	return nil
-}
-
-// Getters
-func (co *IndividualController) Connections() map[string]ssi.ConnectionID {
-	return co.connections
-}
-
-func (co *IndividualController) CrendetialOffersReceived() []ssi.RecordID {
-	return co.credentialOffersReceived
-}
-
-func (co *IndividualController) Credentials() map[string]ssi.RecordID {
-	return co.credentials
-}
-
-func (co *IndividualController) ProofRequestsReceived() []ssi.PresentationID {
-	return co.proofRequestsReceived
 }
