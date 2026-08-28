@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -240,4 +241,8 @@ func acceptProofRequest(payload Payload, presID PresentationID, agentURL string)
 	}
 
 	return nil
+}
+
+func formatURL(agentURL *url.URL) string {
+	return agentURL.Scheme + "://" + agentURL.Host + "/cloud-agent"
 }

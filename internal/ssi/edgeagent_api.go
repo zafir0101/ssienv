@@ -8,25 +8,23 @@ import (
 )
 
 type EdgeAgentAPI struct {
-	AgentURL     *url.URL
-	formattedURL string
+	AgentURL *url.URL
 }
 
 func NewEdgeAgentAPI(agentURL *url.URL) *EdgeAgentAPI {
 	return &EdgeAgentAPI{
-		AgentURL:     agentURL,
-		formattedURL: agentURL.Scheme + "://" + agentURL.Host + "/cloud-agent",
+		AgentURL: agentURL,
 	}
 }
 
 func (ea *EdgeAgentAPI) CreateDID(payload Payload) (LongFormDIDPrism, error) {
-	return registerDID(payload, ea.formattedURL)
+	return registerDID(payload, formatURL(ea.AgentURL))
 }
 
 // Retorna 202 mas não é efetivada na VDR no ambiente de teste locais
 // Verificar se desativa quando não publicado
 func (ea *EdgeAgentAPI) DeactivateDID(did DIDPrism) error {
-	resp, err := http.Post(ea.formattedURL+"/did-registrar/dids/"+did+"/deactivations",
+	resp, err := http.Post(formatURL(ea.AgentURL)+"/did-registrar/dids/"+did+"/deactivations",
 		"application/json", nil)
 	if err != nil {
 		return err
@@ -42,30 +40,30 @@ func (ea *EdgeAgentAPI) DeactivateDID(did DIDPrism) error {
 }
 
 func (ea *EdgeAgentAPI) CreateConnection(payload Payload) (ConnectionID, InvitationOOB, error) {
-	return createConnection(payload, ea.formattedURL)
+	return createConnection(payload, formatURL(ea.AgentURL))
 }
 
 func (ea *EdgeAgentAPI) AcceptConnection(payload Payload) (ConnectionID, error) {
-	return acceptConnection(payload, ea.formattedURL)
+	return acceptConnection(payload, formatURL(ea.AgentURL))
 }
 
 // Limitado a convites enviados mas não respondidos.
 func (ea *EdgeAgentAPI) DeactivateConnection(connID ConnectionID) error {
-	return deactivateConnection(connID, ea.formattedURL)
+	return deactivateConnection(connID, formatURL(ea.AgentURL))
 }
 
 func (ea *EdgeAgentAPI) AcceptProofRequest(payload Payload, presID PresentationID) error {
-	return acceptProofRequest(payload, presID, ea.formattedURL)
+	return acceptProofRequest(payload, presID, formatURL(ea.AgentURL))
 }
 
 func (ea *EdgeAgentAPI) ListProofRequestsData() ([]PresentationID, []ProofRequestStatus, error) {
-	return listProofRequestsData(ea.formattedURL)
+	return listProofRequestsData(formatURL(ea.AgentURL))
 }
 
 func (ea *EdgeAgentAPI) AcceptCredentialOffer(payload Payload, recID RecordID) error {
-	return acceptCredentialOffer(payload, recID, ea.formattedURL)
+	return acceptCredentialOffer(payload, recID, formatURL(ea.AgentURL))
 }
 
 func (ea *EdgeAgentAPI) ListCredentialOffers() ([]RecordID, []CredentialStatus, error) {
-	return listCredentialOffers(ea.formattedURL)
+	return listCredentialOffers(formatURL(ea.AgentURL))
 }

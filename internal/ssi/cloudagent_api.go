@@ -11,19 +11,17 @@ import (
 )
 
 type CloudAgentAPI struct {
-	AgentURL     *url.URL
-	formattedURL string
+	AgentURL *url.URL
 }
 
 func NewCloudAgentAPI(agentURL *url.URL) *CloudAgentAPI {
 	return &CloudAgentAPI{
-		AgentURL:     agentURL,
-		formattedURL: agentURL.Scheme + "://" + agentURL.Host + "/cloud-agent",
+		AgentURL: agentURL,
 	}
 }
 
 func (ca *CloudAgentAPI) CreateDID(payload Payload) (DIDPrism, error) {
-	longFormDID, err := registerDID(payload, ca.formattedURL)
+	longFormDID, err := registerDID(payload, formatURL(ca.AgentURL))
 	if err != nil {
 		return "", err
 	}
@@ -37,7 +35,7 @@ func (ca *CloudAgentAPI) CreateDID(payload Payload) (DIDPrism, error) {
 }
 
 func (ca *CloudAgentAPI) PublishDID(longFormDID LongFormDIDPrism) (DIDPrism, error) {
-	respPub, err := http.Post(ca.formattedURL+"/did-registrar/dids/"+longFormDID+"/publications",
+	respPub, err := http.Post(formatURL(ca.AgentURL)+"/did-registrar/dids/"+longFormDID+"/publications",
 		"application/json", nil)
 	if err != nil {
 		return "", err
@@ -62,7 +60,7 @@ func (ca *CloudAgentAPI) ResolveDID(did DIDPrism) (DIDPrismDocument, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ca.formattedURL+"/dids/"+did, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, formatURL(ca.AgentURL)+"/dids/"+did, nil)
 	if err != nil {
 		return DIDPrismDocument{}, err
 	}
@@ -96,7 +94,7 @@ func (ca *CloudAgentAPI) UpdateDID(payload Payload, did DIDPrism) error {
 		return err
 	}
 
-	resp, err := http.Post(ca.formattedURL+"/did-registrar/dids/"+did+"/updates",
+	resp, err := http.Post(formatURL(ca.AgentURL)+"/did-registrar/dids/"+did+"/updates",
 		"application/json", postBody)
 	if err != nil {
 		return err
@@ -114,7 +112,7 @@ func (ca *CloudAgentAPI) UpdateDID(payload Payload, did DIDPrism) error {
 // Retorna 202 mas não é efetivada na VDR no ambiente de teste locais
 // Verificar se desativa quando não publicado
 func (ca *CloudAgentAPI) DeactivateDID(did DIDPrism) error {
-	resp, err := http.Post(ca.formattedURL+"/did-registrar/dids/"+did+"/deactivations",
+	resp, err := http.Post(formatURL(ca.AgentURL)+"/did-registrar/dids/"+did+"/deactivations",
 		"application/json", nil)
 	if err != nil {
 		return err
@@ -130,16 +128,16 @@ func (ca *CloudAgentAPI) DeactivateDID(did DIDPrism) error {
 }
 
 func (ca *CloudAgentAPI) CreateConnection(payload Payload) (ConnectionID, InvitationOOB, error) {
-	return createConnection(payload, ca.formattedURL)
+	return createConnection(payload, formatURL(ca.AgentURL))
 }
 
 func (ca *CloudAgentAPI) AcceptConnection(payload Payload) (ConnectionID, error) {
-	return acceptConnection(payload, ca.formattedURL)
+	return acceptConnection(payload, formatURL(ca.AgentURL))
 }
 
 // Limitado a convites enviados mas não respondidos.
 func (ca *CloudAgentAPI) DeactivateConnection(connID ConnectionID) error {
-	return deactivateConnection(connID, ca.formattedURL)
+	return deactivateConnection(connID, formatURL(ca.AgentURL))
 }
 
 func (ca *CloudAgentAPI) CreateSchema(payload Payload) (SchemaID, error) {
@@ -148,7 +146,7 @@ func (ca *CloudAgentAPI) CreateSchema(payload Payload) (SchemaID, error) {
 		return "", err
 	}
 
-	resp, err := http.Post(ca.formattedURL+"/schema-registry/schemas",
+	resp, err := http.Post(formatURL(ca.AgentURL)+"/schema-registry/schemas",
 		"application/json", postBody)
 	if err != nil {
 		return "", err
@@ -165,7 +163,7 @@ func (ca *CloudAgentAPI) CreateSchema(payload Payload) (SchemaID, error) {
 		return "", err
 	}
 
-	schemaID := ca.formattedURL + "/schema-registry/schemas/" + schemaResp.SchemaGUID + "/schema"
+	schemaID := formatURL(ca.AgentURL) + "/schema-registry/schemas/" + schemaResp.SchemaGUID + "/schema"
 	return schemaID, nil
 }
 
@@ -175,7 +173,7 @@ func (ca *CloudAgentAPI) CreateCredentialOffer(payload Payload) (RecordID, error
 		return "", err
 	}
 
-	resp, err := http.Post(ca.formattedURL+"/issue-credentials/credential-offers",
+	resp, err := http.Post(formatURL(ca.AgentURL)+"/issue-credentials/credential-offers",
 		"application/json", postBody)
 	if err != nil {
 		return "", err
@@ -196,11 +194,11 @@ func (ca *CloudAgentAPI) CreateCredentialOffer(payload Payload) (RecordID, error
 }
 
 func (ca *CloudAgentAPI) ListCredentialOffers() ([]RecordID, []CredentialStatus, error) {
-	return listCredentialOffers(ca.formattedURL)
+	return listCredentialOffers(formatURL(ca.AgentURL))
 }
 
 func (ca *CloudAgentAPI) AcceptCredentialOffer(payload Payload, recID RecordID) error {
-	return acceptCredentialOffer(payload, recID, ca.formattedURL)
+	return acceptCredentialOffer(payload, recID, formatURL(ca.AgentURL))
 }
 
 func (ca *CloudAgentAPI) CreateProofRequest(payload Payload) (PresentationID, error) {
@@ -209,7 +207,7 @@ func (ca *CloudAgentAPI) CreateProofRequest(payload Payload) (PresentationID, er
 		return "", err
 	}
 
-	resp, err := http.Post(ca.formattedURL+"/present-proof/presentations",
+	resp, err := http.Post(formatURL(ca.AgentURL)+"/present-proof/presentations",
 		"application/json", postBody)
 	if err != nil {
 		return "", err
@@ -230,9 +228,9 @@ func (ca *CloudAgentAPI) CreateProofRequest(payload Payload) (PresentationID, er
 }
 
 func (ca *CloudAgentAPI) ListProofRequestsData() ([]PresentationID, []ProofRequestStatus, error) {
-	return listProofRequestsData(ca.formattedURL)
+	return listProofRequestsData(formatURL(ca.AgentURL))
 }
 
 func (ca *CloudAgentAPI) AcceptProofRequest(payload Payload, presID PresentationID) error {
-	return acceptProofRequest(payload, presID, ca.formattedURL)
+	return acceptProofRequest(payload, presID, formatURL(ca.AgentURL))
 }

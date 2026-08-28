@@ -21,12 +21,14 @@ type IndividualController struct {
 }
 
 func NewIndividualController(cloudAgentAPI *ssi.EdgeAgentAPI) *IndividualController {
-	return &IndividualController{
+	controller := &IndividualController{
 		EdgeAgentAPI:          cloudAgentAPI,
 		Connections:           make(map[string]ssi.ConnectionID),
 		Credentials:           make(map[string]ssi.RecordID),
 		ProofRequestsAccepted: make(map[string]ssi.PresentationID),
 	}
+	controller.createDID()
+	return controller
 }
 
 func (co *IndividualController) RefreshOffersReceived() error {
@@ -47,7 +49,7 @@ func (co *IndividualController) RefreshOffersReceived() error {
 	return nil
 }
 
-func (co *IndividualController) RefreshProofRequestsReceived() error {
+func (co *IndividualController) RefreshProofRequests() error {
 	presentationIDs, proofReqStatus, err := co.EdgeAgentAPI.ListProofRequestsData()
 	if err != nil {
 		return err
@@ -66,7 +68,7 @@ func (co *IndividualController) RefreshProofRequestsReceived() error {
 	return nil
 }
 
-func (co *IndividualController) CreateDID() error {
+func (co *IndividualController) createDID() error {
 	pksID := []string{"key1-authentication", "key2-assertionMethod"}
 	pksPurpose := []KeyPurpose{Authentication, AssertionMethod}
 
@@ -177,4 +179,28 @@ func (co *IndividualController) AcceptProofRequest(proofReqLabel string, credent
 	co.ProofRequestsAccepted[proofReqLabel] = presID
 
 	return nil
+}
+
+func (co *IndividualController) DID() ssi.LongFormDIDPrism {
+	return co.IndividualDIDPrism
+}
+
+func (co *IndividualController) ConnectionsHashMap() map[string]ssi.ConnectionID {
+	return co.Connections
+}
+
+func (co *IndividualController) CredentialOffersReceivedSlice() []ssi.RecordID {
+	return co.CredentialOffersReceived
+}
+
+func (co *IndividualController) CredentialsHashMap() map[string]ssi.RecordID {
+	return co.Credentials
+}
+
+func (co *IndividualController) ProofRequestsAcceptedHashMap() map[string]ssi.PresentationID {
+	return co.ProofRequestsAccepted
+}
+
+func (co *IndividualController) ProofRequestsReceivedHashMap() []ssi.PresentationID {
+	return co.ProofRequestsReceived
 }
