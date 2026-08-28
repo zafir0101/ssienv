@@ -36,11 +36,11 @@ docker compose up
 ```
 ### Configuration
 
-| Exposed Service                         | Description                             |
-| --------------------------------------- | --------------------------------------- |
-| `host.docker.internal:8080/cloud-agent` | Single-tenant Cloud Agent #1 (issuer)   |
-| `host.docker.internal:8081/cloud-agent` | Single-tenant Cloud Agent #2 (holder)   |
-| `host.docker.internal:8082/cloud-agent` | Single-tenant Cloud Agent #3 (verifier) |
+| Exposed Service             | Description                             |
+| --------------------------- | --------------------------------------- |
+| `host.docker.internal:8080` | Single-tenant Cloud Agent #1 (issuer)   |
+| `host.docker.internal:8081` | Single-tenant Cloud Agent #2 (holder)   |
+| `host.docker.internal:8082` | Single-tenant Cloud Agent #3 (verifier) |
 
 ## 📄 License
 
