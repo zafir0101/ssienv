@@ -5,15 +5,13 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
+	"github.com/zafir0101/ssienv/cmd/serializer"
 )
 
 var (
-	sent bool
-
 	ListCmd = &cobra.Command{
 		Use:   "list",
-		Short: "",
+		Short: "List the stored credentials on your controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := serializer.WithPureCommand(cmd, list); err != nil {
 				fmt.Println(err.Error())
@@ -23,14 +21,12 @@ var (
 	}
 )
 
-func init() {
-	ListCmd.Flags().BoolVarP(&sent, "sent", "s", false, "set the filter to list the offers sent (only available to institutional controllers)")
-}
+func init() {}
 
 func list(coData serializer.ControllerData) error {
 	creds := coData.Controller.CredentialsHashMap()
 	if len(creds) == 0 {
-		fmt.Println("No stored credential on your controller")
+		fmt.Println("No stored credentials on your controller")
 		return nil
 	}
 

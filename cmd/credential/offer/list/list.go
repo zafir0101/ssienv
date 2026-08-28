@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
-	"github.com/zafir0101/SSI-ENV/internal/domain"
+	"github.com/zafir0101/ssienv/cmd/serializer"
+	"github.com/zafir0101/ssienv/internal/domain"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 
 	ListCmd = &cobra.Command{
 		Use:   "list",
-		Short: "",
+		Short: "List the stored credential offers on your controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := serializer.WithPureCommand(cmd, list); err != nil {
 				fmt.Println(err.Error())
@@ -39,7 +39,7 @@ func list(coData serializer.ControllerData) error {
 
 		offers := ins.CredentialOffersSent
 		if len(offers) == 0 {
-			fmt.Println("No stored offer on your controller")
+			fmt.Println("No stored offers on your controller")
 			return nil
 		}
 
@@ -56,7 +56,7 @@ func list(coData serializer.ControllerData) error {
 
 	offers := coData.Controller.CredentialOffersReceivedSlice()
 	if len(offers) == 0 {
-		fmt.Println("No stored offer on your controller")
+		fmt.Println("No stored offers on your controller")
 		return nil
 	}
 

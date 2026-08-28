@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
+	"github.com/zafir0101/ssienv/cmd/serializer"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 
 	AcceptCmd = &cobra.Command{
 		Use:   "accept",
-		Short: "",
+		Short: "Accept a credential offer received by your controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := serializer.WithMutateCommand(cmd, accept); err != nil {
 				fmt.Println(err.Error())

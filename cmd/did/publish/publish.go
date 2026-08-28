@@ -1,12 +1,13 @@
 package publish
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
-	"github.com/zafir0101/SSI-ENV/internal/domain"
+	"github.com/zafir0101/ssienv/cmd/serializer"
+	"github.com/zafir0101/ssienv/internal/domain"
 )
 
 var (
@@ -15,32 +16,9 @@ var (
 
 	PublishCmd = &cobra.Command{
 		Use:   "publish",
-		Short: "",
+		Short: "Publish long-form did",
 		Run: func(cmd *cobra.Command, args []string) {
-			controllerLabel, err := cmd.Flags().GetString("controller")
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			controller, isInstitutional, err := serializer.Deserialize(controllerLabel)
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			if !isInstitutional {
-				fmt.Println("The command \"publish\" is only available to institutional controllers")
-				os.Exit(1)
-			}
-
-			ins := controller.(*domain.InstitutionController)
-
-			if err := ins.PublishDID(didLabel, did); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			if err := serializer.Serialize(controllerLabel, ins); err != nil {
+			if err := serializer.WithMutateCommand(cmd, publish); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
@@ -50,7 +28,21 @@ var (
 
 func init() {
 	PublishCmd.Flags().StringVarP(&didLabel, "label", "l", "", "the label that identifies the did on your controller")
-	PublishCmd.Flags().StringVarP(&did, "did", "d", "", "did long form (required)")
+	PublishCmd.Flags().StringVarP(&did, "did", "d", "", "long-form did (required)")
 
 	PublishCmd.MarkFlagRequired("did")
+}
+
+func publish(coData serializer.ControllerData) error {
+	if !coData.IsInstitutional {
+		return errors.New("The command \"publish\" is only available to institutional controllers")
+	}
+
+	ins := coData.Controller.(*domain.InstitutionController)
+
+	if err := ins.PublishDID(didLabel, did); err != nil {
+		return err
+	}
+
+	return nil
 }

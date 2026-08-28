@@ -1,4 +1,4 @@
-module github.com/zafir0101/SSI-ENV
+module github.com/zafir0101/ssienv
 
 go 1.26.5
 

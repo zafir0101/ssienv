@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
-	"github.com/zafir0101/SSI-ENV/internal/domain"
+	"github.com/zafir0101/ssienv/cmd/serializer"
+	"github.com/zafir0101/ssienv/internal/domain"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 
 	ListCmd = &cobra.Command{
 		Use:   "list",
-		Short: "",
+		Short: "List the stored proof requests on your controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := serializer.WithPureCommand(cmd, list); err != nil {
 				fmt.Println(err.Error())
@@ -45,7 +45,7 @@ func list(coData serializer.ControllerData) error {
 
 		proofReqs := ins.ProofRequestsSentAccepted
 		if len(proofReqs) == 0 {
-			fmt.Println("No stored proof request on your controller")
+			fmt.Println("No stored proof requests on your controller")
 			return nil
 		}
 
@@ -62,7 +62,7 @@ func list(coData serializer.ControllerData) error {
 
 		proofReqs := ins.ProofRequestsSent
 		if len(proofReqs) == 0 {
-			fmt.Println("No stored proof request sent by your controller")
+			fmt.Println("No stored proof requests sent by your controller")
 			return nil
 		}
 
@@ -77,7 +77,7 @@ func list(coData serializer.ControllerData) error {
 	if accept {
 		proofReqs := coData.Controller.ProofRequestsAcceptedHashMap()
 		if len(proofReqs) == 0 {
-			fmt.Println("No stored proof request accepted by your controller")
+			fmt.Println("No stored proof requests accepted by your controller")
 			return nil
 		}
 
@@ -91,7 +91,7 @@ func list(coData serializer.ControllerData) error {
 
 	proofReqs := coData.Controller.ProofRequestsReceivedHashMap()
 	if len(proofReqs) == 0 {
-		fmt.Println("No stored proof request received on your controller")
+		fmt.Println("No stored proof requests received on your controller")
 		return nil
 	}
 

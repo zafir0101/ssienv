@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
+	"github.com/zafir0101/ssienv/cmd/serializer"
 )
 
 var (
@@ -14,26 +14,9 @@ var (
 
 	AcceptCmd = &cobra.Command{
 		Use:   "accept",
-		Short: "",
+		Short: "Accept a connection invitation received by your controller",
 		Run: func(cmd *cobra.Command, args []string) {
-			controllerLabel, err := cmd.Flags().GetString("controller")
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			controller, _, err := serializer.Deserialize(controllerLabel)
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			if err := controller.AcceptConnection(connectionLabel, invOOB); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			if err := serializer.Serialize(controllerLabel, controller); err != nil {
+			if err := serializer.WithMutateCommand(cmd, accept); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
@@ -47,4 +30,8 @@ func init() {
 
 	AcceptCmd.MarkFlagRequired("label")
 	AcceptCmd.MarkFlagRequired("invitation")
+}
+
+func accept(coData serializer.ControllerData) error {
+	return coData.Controller.AcceptConnection(connectionLabel, invOOB)
 }

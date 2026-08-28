@@ -2,12 +2,13 @@ package create
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
-	"github.com/zafir0101/SSI-ENV/internal/domain"
+	"github.com/zafir0101/ssienv/cmd/serializer"
+	"github.com/zafir0101/ssienv/internal/domain"
 )
 
 var (
@@ -16,33 +17,9 @@ var (
 
 	CreateCmd = &cobra.Command{
 		Use:   "create",
-		Short: "",
+		Short: "Create a schema and stored the id on your controller",
 		Run: func(cmd *cobra.Command, args []string) {
-			controllerLabel, err := cmd.Flags().GetString("controller")
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			controller, isInstitutional, err := serializer.Deserialize(controllerLabel)
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			if !isInstitutional {
-				fmt.Println("The command \"publish\" is only available to institutional controllers")
-				os.Exit(1)
-			}
-
-			ins := controller.(*domain.InstitutionController)
-
-			if err := ins.CreateSchema(schemaLabel, json.RawMessage(schema)); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-
-			if err := serializer.Serialize(controllerLabel, ins); err != nil {
+			if err := serializer.WithMutateCommand(cmd, create); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
@@ -53,4 +30,19 @@ var (
 func init() {
 	CreateCmd.Flags().StringVarP(&schemaLabel, "label", "l", "", "the label that identifies the schema on your controller")
 	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "the schema to be created (json raw)")
+}
+
+func create(coData serializer.ControllerData) error {
+
+	if !coData.IsInstitutional {
+		return errors.New("The command \"publish\" is only available to institutional controllers")
+	}
+
+	ins := coData.Controller.(*domain.InstitutionController)
+
+	if err := ins.CreateSchema(schemaLabel, json.RawMessage(schema)); err != nil {
+		return err
+	}
+
+	return nil
 }

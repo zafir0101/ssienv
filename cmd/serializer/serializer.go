@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/internal/domain"
+	"github.com/zafir0101/ssienv/internal/domain"
 )
 
 var path = "cmd/serializer/data/"

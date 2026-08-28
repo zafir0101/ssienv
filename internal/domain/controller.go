@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/zafir0101/SSI-ENV/internal/ssi"
+import "github.com/zafir0101/ssienv/internal/ssi"
 
 type Controller interface {
 	DID() string

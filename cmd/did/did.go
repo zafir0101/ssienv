@@ -2,17 +2,16 @@ package did
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/did/list"
-	"github.com/zafir0101/SSI-ENV/cmd/did/publish"
-	"github.com/zafir0101/SSI-ENV/cmd/did/resolve"
-	"github.com/zafir0101/SSI-ENV/cmd/did/update"
-	"github.com/zafir0101/SSI-ENV/cmd/did/whoami"
+	"github.com/zafir0101/ssienv/cmd/did/list"
+	"github.com/zafir0101/ssienv/cmd/did/publish"
+	"github.com/zafir0101/ssienv/cmd/did/resolve"
+	"github.com/zafir0101/ssienv/cmd/did/update"
+	"github.com/zafir0101/ssienv/cmd/did/whoami"
 )
 
 var (
 	DIDCmd = &cobra.Command{
-		Use:   "did",
-		Short: "",
+		Use: "did",
 	}
 )
 

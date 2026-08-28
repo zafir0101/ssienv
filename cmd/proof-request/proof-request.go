@@ -2,15 +2,15 @@ package proof_request
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/proof-request/accept"
-	"github.com/zafir0101/SSI-ENV/cmd/proof-request/create"
-	"github.com/zafir0101/SSI-ENV/cmd/proof-request/list"
+	"github.com/zafir0101/ssienv/cmd/proof-request/accept"
+	"github.com/zafir0101/ssienv/cmd/proof-request/create"
+	"github.com/zafir0101/ssienv/cmd/proof-request/list"
 )
 
 var (
 	ProofRequestCmd = &cobra.Command{
 		Use:   "proof-request",
-		Short: "",
+		Short: "Cryptographic query sent by a verifier to a holder asking them to share specific attributes of their credential",
 	}
 )
 

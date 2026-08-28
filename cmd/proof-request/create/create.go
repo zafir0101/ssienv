@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/serializer"
-	"github.com/zafir0101/SSI-ENV/internal/domain"
+	"github.com/zafir0101/ssienv/cmd/serializer"
+	"github.com/zafir0101/ssienv/internal/domain"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 	CreateCmd = &cobra.Command{
 		Use:   "create",
-		Short: "",
+		Short: "Create a proof request and store the presentation id on your controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := serializer.WithMutateCommand(cmd, create); err != nil {
 				fmt.Println(err.Error())
@@ -28,7 +28,7 @@ var (
 )
 
 func init() {
-	CreateCmd.Flags().StringVarP(&proofReqLabel, "label", "l", "", "the label that will identifies the proof request on your controller (required)")
+	CreateCmd.Flags().StringVarP(&proofReqLabel, "label", "l", "", "the label that will identify the proof request on your controller (required)")
 	CreateCmd.Flags().StringVarP(&connectionLabel, "connection", "", "", "the label that identifies the connection on your controller (required)")
 	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "The URL pointing to the JSON schema that will be used for this offer (required)")
 

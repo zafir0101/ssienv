@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/zafir0101/SSI-ENV/internal/ssi"
+	"github.com/zafir0101/ssienv/internal/ssi"
 )
 
 func assemblePublicKeys(pksID []string, pksPurpose []KeyPurpose) ([]publicKey, error) {

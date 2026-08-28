@@ -2,14 +2,14 @@ package schema
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/zafir0101/SSI-ENV/cmd/schema/create"
-	"github.com/zafir0101/SSI-ENV/cmd/schema/list"
+	"github.com/zafir0101/ssienv/cmd/schema/create"
+	"github.com/zafir0101/ssienv/cmd/schema/list"
 )
 
 var (
 	SchemaCmd = &cobra.Command{
 		Use:   "schema",
-		Short: "",
+		Short: "Digital blueprint that defines the structure, attribute names, and data types for a verifiable credential",
 	}
 )
 

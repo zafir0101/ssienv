@@ -3,7 +3,7 @@ package domain
 import (
 	"encoding/json"
 
-	"github.com/zafir0101/SSI-ENV/internal/ssi"
+	"github.com/zafir0101/ssienv/internal/ssi"
 )
 
 // Types to request a did prism

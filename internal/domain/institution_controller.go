@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/zafir0101/SSI-ENV/internal/ssi"
+	"github.com/zafir0101/ssienv/internal/ssi"
 )
 
 type InstitutionController struct {
