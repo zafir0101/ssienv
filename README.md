@@ -26,6 +26,21 @@ Or install directly:
 ```bash
 go install github.com/zafir0101/ssienv@latest
 ```
+## Starting the Agents
+
+Before using `ssienv`, you need to start the local Cloud Agents. Go into the infrastructure folder and bring the stack up:
+
+```bash
+cd ssienv/infra/st-multi
+docker compose up
+```
+### Configuration
+
+| Exposed Service                         | Description                             |
+| --------------------------------------- | --------------------------------------- |
+| `host.docker.internal:8080/cloud-agent` | Single-tenant Cloud Agent #1 (issuer)   |
+| `host.docker.internal:8081/cloud-agent` | Single-tenant Cloud Agent #2 (holder)   |
+| `host.docker.internal:8082/cloud-agent` | Single-tenant Cloud Agent #3 (verifier) |
 
 ## 📄 License
 
