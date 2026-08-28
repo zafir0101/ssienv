@@ -33,14 +33,22 @@ var (
 
 			if institutional {
 				api := ssi.NewCloudAgentAPI(parsedURL)
-				controller := domain.NewInstitutionController(api)
+				controller, err := domain.NewInstitutionController(api)
+				if err != nil {
+					fmt.Println(err.Error())
+					os.Exit(1)
+				}
 				if err := serializer.Serialize(controllerLabel, controller); err != nil {
 					fmt.Printf("An error occurred while serializing the controller: %s\n", err.Error())
 					os.Exit(1)
 				}
 			} else {
 				api := ssi.NewEdgeAgentAPI(parsedURL)
-				controller := domain.NewIndividualController(api)
+				controller, err := domain.NewIndividualController(api)
+				if err != nil {
+					fmt.Println(err.Error())
+					os.Exit(1)
+				}
 				if err := serializer.Serialize(controllerLabel, controller); err != nil {
 					fmt.Printf("An error occurred while serializing the controller: %s\n", err.Error())
 					os.Exit(1)

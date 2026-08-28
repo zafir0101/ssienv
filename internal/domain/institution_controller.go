@@ -31,7 +31,7 @@ type InstitutionController struct {
 	Num_keys int
 }
 
-func NewInstitutionController(cloudAgentAPI *ssi.CloudAgentAPI) *InstitutionController {
+func NewInstitutionController(cloudAgentAPI *ssi.CloudAgentAPI) (*InstitutionController, error) {
 	controller := &InstitutionController{
 		CloudAgentAPI:             cloudAgentAPI,
 		PublishedDIDs:             make(map[string]ssi.DIDPrism),
@@ -43,8 +43,11 @@ func NewInstitutionController(cloudAgentAPI *ssi.CloudAgentAPI) *InstitutionCont
 		ProofRequestsSent:         make(map[string]ssi.PresentationID),
 		ProofRequestsSentAccepted: make(map[string]ssi.RecordID),
 	}
-	controller.createDID()
-	return controller
+	if err := controller.createDID(); err != nil {
+		return nil, err
+	}
+
+	return controller, nil
 }
 
 func (co *InstitutionController) RefreshOffersReceived() error {

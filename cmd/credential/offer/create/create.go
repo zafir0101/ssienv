@@ -31,8 +31,7 @@ var (
 
 func init() {
 	CreateCmd.Flags().StringVarP(&offerLabel, "label", "l", "", "the label that will identifies the credential offer on your controller")
-	CreateCmd.Flags().StringVarP(&connection, "connection", "", "", "The label (stored inside your controller) of a DIDComm connection that already "+
-		"exists between this issuer agent and the holder cloud or edge agent (required)")
+	CreateCmd.Flags().StringVarP(&connection, "connection", "", "", "The label (stored inside your controller) of a DIDComm connection")
 	CreateCmd.Flags().StringVarP(&claims, "claims", "", "", "The set of claims that will be included in the issued credential "+
 		"(json raw) (required)")
 	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "The URL pointing to the JSON schema that will be used for this offer "+

@@ -20,15 +20,18 @@ type IndividualController struct {
 	ProofRequestsReceived []ssi.RecordID // Limitação: Não consegue compartilhar uma label para a requisicao
 }
 
-func NewIndividualController(cloudAgentAPI *ssi.EdgeAgentAPI) *IndividualController {
+func NewIndividualController(cloudAgentAPI *ssi.EdgeAgentAPI) (*IndividualController, error) {
 	controller := &IndividualController{
 		EdgeAgentAPI:          cloudAgentAPI,
 		Connections:           make(map[string]ssi.ConnectionID),
 		Credentials:           make(map[string]ssi.RecordID),
 		ProofRequestsAccepted: make(map[string]ssi.PresentationID),
 	}
-	controller.createDID()
-	return controller
+	if err := controller.createDID(); err != nil {
+		return nil, err
+	}
+
+	return controller, nil
 }
 
 func (co *IndividualController) RefreshOffersReceived() error {
