@@ -28,8 +28,11 @@ var (
 )
 
 func init() {
-	CreateCmd.Flags().StringVarP(&schemaLabel, "label", "l", "", "the label that identifies the schema on your controller")
-	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "the schema to be created (json raw)")
+	CreateCmd.Flags().StringVarP(&schemaLabel, "label", "l", "", "the label that identifies the schema on your controller (required)")
+	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "the schema to be created (json raw) (required)")
+
+	CreateCmd.MarkFlagRequired("label")
+	CreateCmd.MarkFlagRequired("schema")
 }
 
 func create(coData serializer.ControllerData) error {
