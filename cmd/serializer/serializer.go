@@ -3,16 +3,44 @@ package serializer
 import (
 	"encoding/gob"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/zafir0101/ssienv/internal/domain"
 )
 
-var path = "cmd/serializer/data/"
+const appDirName = "ssienv"
+
+func dataDir() (string, error) {
+	baseDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	dir := filepath.Join(baseDir, appDirName, "data")
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", err
+	}
+
+	return dir, nil
+}
+
+func binPath(label string) (string, error) {
+	dir, err := dataDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, label+".bin"), nil
+}
 
 func Serialize(label string, obj domain.Controller) error {
-	file, err := os.Create(path + label + ".bin")
+	path, err := binPath(label)
+	if err != nil {
+		return err
+	}
 
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -23,8 +51,13 @@ func Serialize(label string, obj domain.Controller) error {
 }
 
 func Deserialize(label string) (domain.Controller, bool, error) {
-	file1, err := os.Open(path + label + ".bin")
-	file2, err := os.Open(path + label + ".bin")
+	path, err := binPath(label)
+	if err != nil {
+		return nil, false, err
+	}
+
+	file1, err := os.Open(path)
+	file2, err := os.Open(path)
 	if err != nil {
 		return nil, false, err
 	}
