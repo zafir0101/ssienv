@@ -9,15 +9,34 @@ import (
 	"github.com/zafir0101/ssienv/internal/ssi"
 )
 
+const defaultSchemaRaw = `{
+    "$id": "https://example.com/breduperson-1.0.0",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "brPersonCPF": { "type": "string" },
+      "brEduAffiliation": { "type": "string" },
+      "brEduAffiliationType": {
+        "type": "string",
+        "enum": ["student", "employee", "staff", "faculty"]
+      },
+      "brEntranceDate": { "type": "string" },
+      "brExitDate": { "type": "string" }
+    },
+    "required": ["brPersonCPF", "brEduAffiliation", "brEduAffiliationType"],
+    "additionalProperties": false
+  }`
+
 type InstitutionController struct {
 	CloudAgentAPI *ssi.CloudAgentAPI
 
 	InstitutionDIDPrism ssi.DIDPrism
-	PublishedDIDs       map[string]ssi.DIDPrism // Sera serializado, apenas DIDs publicados na máquina
+	PublishedDIDs       map[string]ssi.DIDPrism
 
-	Connections map[string]ssi.ConnectionID // Será serializado, apenas Connections realizados na maquina
+	Connections map[string]ssi.ConnectionID
 
-	Schemas map[string]ssi.SchemaID // Será serializado, apenas schemas criados na maquina
+	Schemas         map[string]ssi.SchemaID
+	DefaultSchemaID string
 
 	Credentials              map[string]ssi.RecordID
 	CredentialOffersReceived []ssi.RecordID // Limitação: Não consegue compartilhar uma label para a oferta
@@ -43,11 +62,18 @@ func NewInstitutionController(cloudAgentAPI *ssi.CloudAgentAPI) (*InstitutionCon
 		ProofRequestsSent:         make(map[string]ssi.PresentationID),
 		ProofRequestsSentAccepted: make(map[string]ssi.RecordID),
 	}
+
 	if err := controller.createDID(); err != nil {
 		return nil, err
 	}
 
+	if err := controller.CreateSchema("defaultSchema", json.RawMessage(defaultSchemaRaw)); err != nil {
+		return nil, err
+	}
+	controller.DefaultSchemaID = controller.Schemas["defaultSchema"]
+
 	return controller, nil
+
 }
 
 func (co *InstitutionController) RefreshOffersReceived() error {
@@ -157,10 +183,6 @@ func (co *InstitutionController) AddKeyToDID(pkPurpose KeyPurpose) error {
 }
 
 func (co *InstitutionController) RemoveDIDKey(pkID string, pkPurpose KeyPurpose) error {
-	if co.InstitutionDIDPrism == "" {
-		return errors.New("First create a did")
-	}
-
 	if !pkPurpose.isValid() {
 		return errors.New("invalid key purpose")
 	}
@@ -180,15 +202,7 @@ func (co *InstitutionController) RemoveDIDKey(pkID string, pkPurpose KeyPurpose)
 }
 
 func (co *InstitutionController) deactivateDID() error {
-	if co.InstitutionDIDPrism == "" {
-		return errors.New("First create a did")
-	}
-
-	if err := co.CloudAgentAPI.DeactivateDID(co.InstitutionDIDPrism); err != nil {
-		return err
-	}
-
-	return nil
+	return co.CloudAgentAPI.DeactivateDID(co.InstitutionDIDPrism)
 }
 
 func (co *InstitutionController) CreateConnection(label string) (ssi.InvitationOOB, error) {
@@ -262,6 +276,25 @@ func (co *InstitutionController) CreateCredentialOffer(offerLabel string, claims
 	return nil
 }
 
+func (co *InstitutionController) CreateDefaultCredentialOffer(offerLabel string, claims json.RawMessage,
+	connLabel string) error {
+	connID := co.Connections[connLabel]
+	if connID == "" {
+		return errors.New("No Connections with label " + connLabel)
+	}
+
+	payload := newCredentialOfferPayload(claims, co.InstitutionDIDPrism, connID, co.DefaultSchemaID)
+
+	recordID, err := co.CloudAgentAPI.CreateCredentialOffer(payload)
+	if err != nil {
+		return err
+	}
+
+	co.CredentialOffersSent[offerLabel] = recordID
+
+	return nil
+}
+
 func (co *InstitutionController) AcceptCredentialOffer(credentialLabel string, recID ssi.RecordID) error {
 	payload := newOfferAcceptancePayload(co.InstitutionDIDPrism)
 
@@ -296,6 +329,24 @@ func (co *InstitutionController) CreateProofRequest(proofReqLabel string, connLa
 	}
 
 	payload := newProofRequestPayload(proofReqLabel, connID, schemaID, co.InstitutionDIDPrism)
+
+	presentationID, err := co.CloudAgentAPI.CreateProofRequest(payload)
+	if err != nil {
+		return err
+	}
+
+	co.ProofRequestsSent[proofReqLabel] = presentationID
+
+	return nil
+}
+
+func (co *InstitutionController) CreateDefaultProofRequest(proofReqLabel string, connLabel string) error {
+	connID := co.Connections[connLabel]
+	if connID == "" {
+		return errors.New("No Connections with label " + connLabel)
+	}
+
+	payload := newProofRequestPayload(proofReqLabel, connID, co.DefaultSchemaID, co.InstitutionDIDPrism)
 
 	presentationID, err := co.CloudAgentAPI.CreateProofRequest(payload)
 	if err != nil {

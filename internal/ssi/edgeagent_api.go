@@ -21,8 +21,6 @@ func (ea *EdgeAgentAPI) CreateDID(payload Payload) (LongFormDIDPrism, error) {
 	return registerDID(payload, formatURL(ea.AgentURL))
 }
 
-// Retorna 202 mas não é efetivada na VDR no ambiente de teste locais
-// Verificar se desativa quando não publicado
 func (ea *EdgeAgentAPI) DeactivateDID(did DIDPrism) error {
 	resp, err := http.Post(formatURL(ea.AgentURL)+"/did-registrar/dids/"+did+"/deactivations",
 		"application/json", nil)

@@ -39,7 +39,7 @@ func binPath(label string) (string, error) {
 	return filepath.Join(dir, label+".bin"), nil
 }
 
-func serialize(label string, obj domain.Controller) error {
+func Serialize(label string, obj domain.Controller) error {
 	path, err := binPath(label)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func WithMutateCommand(cmd *cobra.Command, fn func(coData ControllerData) error)
 		return err
 	}
 
-	return serialize(controllerLabel, controller)
+	return Serialize(controllerLabel, controller)
 }
 
 func WithPureCommand(cmd *cobra.Command, fn func(cmdData ControllerData) error) error {

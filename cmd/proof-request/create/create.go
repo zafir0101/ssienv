@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	nonDefault      bool
 	proofReqLabel   string
 	connectionLabel string
 	schema          string
@@ -28,12 +29,15 @@ var (
 )
 
 func init() {
-	CreateCmd.Flags().StringVarP(&proofReqLabel, "label", "l", "", "the label that will identify the proof request on your controller (required)")
-	CreateCmd.Flags().StringVarP(&connectionLabel, "connection", "", "", "the label that identifies the connection on your controller (required)")
-	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "The URL pointing to the JSON schema that will be used for this offer (required)")
+	CreateCmd.Flags().StringVarP(&proofReqLabel, "label", "l", "", "The label that will identify the proof request on your controller (required)")
+	CreateCmd.Flags().StringVarP(&connectionLabel, "connection", "", "", "The label that identifies the connection on your controller (required)")
+
+	CreateCmd.Flags().BoolVar(&nonDefault, "non-default", false, "Use a schema other than the controller's default")
+	CreateCmd.Flags().StringVarP(&schema, "schema", "s", "", "The URL pointing to the JSON schema that will be used for this proof request (required if non-default is true)")
 
 	CreateCmd.MarkFlagRequired("label")
 	CreateCmd.MarkFlagRequired("connection")
+	CreateCmd.MarkFlagsRequiredTogether("non-default", "schema")
 }
 
 func create(coData serializer.ControllerData) error {
@@ -43,9 +47,9 @@ func create(coData serializer.ControllerData) error {
 
 	ins := coData.Controller.(*domain.InstitutionController)
 
-	if err := ins.CreateProofRequest(proofReqLabel, connectionLabel, schema); err != nil {
-		return err
+	if nonDefault {
+		return ins.CreateProofRequest(proofReqLabel, connectionLabel, schema)
 	}
 
-	return nil
+	return ins.CreateDefaultProofRequest(proofReqLabel, connectionLabel)
 }

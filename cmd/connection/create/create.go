@@ -36,6 +36,6 @@ func create(coData serializer.ControllerData) error {
 		return err
 	}
 
-	fmt.Printf("Send this invitation code to the other peer:\n %s", invOOB)
+	fmt.Printf("Send this invitation code to the other peer:\n%s\n", invOOB)
 	return nil
 }
